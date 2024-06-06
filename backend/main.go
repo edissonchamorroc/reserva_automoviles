@@ -9,6 +9,8 @@ import (
 	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/handlers"
 	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/models"
 	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/repositories"
+	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/utils"
+	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 )
@@ -30,26 +32,17 @@ func main() {
 	if err != nil {
 		log.Fatalln("error conectando a la base de datos", err.Error())
 	}
+	handlerUsuarios := adecuacionAmbienteUsuarios(conn)
+	handlerAutos := adecuacionAmbienteAutos(conn)
 
-	baseDatosUsuarios, err := repositories.NewRepository[models.Usuario](conn)
-	if err != nil {
-		log.Fatalln("falló creando instancia en bd", err.Error())
-	}
+	r := mux.NewRouter()
+	r.Use(utils.CORSMiddleware)
+	r.HandleFunc("/login/{cedula}/{contrasena}", handlerUsuarios.LoginHandler()).Methods("GET")
+	r.HandleFunc("/registro/{cedula}/{contrasena}", handlerUsuarios.RegistrarUsuario()).Methods("GET")
+	r.HandleFunc("/autos/{cedula}", handlerAutos.ListarAutos()).Methods("GET")
+	r.HandleFunc("/reserva/{id}/{cedula}", handlerAutos.ActualizarReserva()).Methods("GET")
+	http.ListenAndServe(":8080", r)
 
-	controllerUsuarios, err := controllers.NewControllerUsuario(baseDatosUsuarios)
-	if err != nil {
-		log.Fatalln("error creando controlador", err.Error())
-
-	}
-	handlerUsuarios, err := handlers.NewHandlerUsuario(controllerUsuarios)
-	if err != nil {
-		log.Fatalln("error creando handler", err.Error())
-
-	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /usuarios/{cedula}", handlerUsuarios.BuscarUsuario())
-	mux.HandleFunc("POST /usuarios/registro", handlerUsuarios.RegistrarUsuario())
-	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
 func conectarDB(url, driver string) (*sqlx.DB, error) {
@@ -61,4 +54,42 @@ func conectarDB(url, driver string) (*sqlx.DB, error) {
 	}
 	log.Printf("Conexion exitosa %#v", db)
 	return db, err
+}
+
+func adecuacionAmbienteUsuarios(conn *sqlx.DB) *handlers.HandlerUsuarios {
+
+	baseDatosUsuarios, err := repositories.NewRepository[models.Usuario](conn)
+	if err != nil {
+		log.Fatalln("falló creando instancia en bd de usuarios", err.Error())
+	}
+
+	controllerUsuarios, err := controllers.NewControllerUsuario(baseDatosUsuarios)
+	if err != nil {
+		log.Fatalln("error creando controlador para usuarios", err.Error())
+
+	}
+	handlerUsuarios, err := handlers.NewHandlerUsuario(controllerUsuarios)
+	if err != nil {
+		log.Fatalln("error creando handler para usuarios", err.Error())
+	}
+	return handlerUsuarios
+}
+
+func adecuacionAmbienteAutos(conn *sqlx.DB) *handlers.HandlerAutos {
+
+	baseDatosAutos, err := repositories.NewRepository[models.Auto](conn)
+	if err != nil {
+		log.Fatalln("falló creando instancia en bd de usuarios", err.Error())
+	}
+
+	controllerAutos, err := controllers.NewControllerAuto(baseDatosAutos)
+	if err != nil {
+		log.Fatalln("error creando controlador para usuarios", err.Error())
+
+	}
+	handlerAuto, err := handlers.NewHandlerAutos(controllerAutos)
+	if err != nil {
+		log.Fatalln("error creando handler para usuarios", err.Error())
+	}
+	return handlerAuto
 }

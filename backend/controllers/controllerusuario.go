@@ -12,7 +12,7 @@ import (
 
 var (
 	buscarUsuarioByCedula = "SELECT * FROM usuarios where cedula=$1"
-	registrarUsuario = "insert into usuarios (cedula, nombre, celular, email, contrasena) values (:cedula, :nombre, :celular, :email, :contrasena)"
+	registrarUsuario      = "insert into usuarios (cedula, contrasena) values (:cedula, :contrasena)"
 )
 
 type ControllerUsuario struct {
@@ -28,38 +28,38 @@ func NewControllerUsuario(repo repositories.Repository[models.Usuario]) (*Contro
 	}, nil
 }
 
-func (c *ControllerUsuario) BuscarUsuario(cedula string) (bool, error) {
-	
-	_, err := c.repo.Read(context.Background(), buscarUsuarioByCedula, cedula)
-	if err != nil {
-		log.Printf("Usuario no registrado: %s", err.Error())
-		return false, fmt.Errorf("usuario no registrado, con error: %s", err.Error())
-	}
-	return true, nil
-}
-
-func (c *ControllerUsuario) RegistrarUsuario(body []byte) (bool, error) {
-
-	nuevoUsuario := &models.Usuario{}
-
-	err := json.Unmarshal(body, nuevoUsuario)
-	if err != nil {
-		log.Printf("datos no validos: %s", err.Error())
-		return false, fmt.Errorf("falla por datos no validos, con error: %s", err.Error())
-	}
+func (c *ControllerUsuario) RegistrarUsuario(cedula string, contrasena string) ([]byte, error) {
 
 	valoresColumna := map[string]any{
-		"cedula":     nuevoUsuario.Cedula,
-		"nombre":     nuevoUsuario.Nombre,
-		"celular":    nuevoUsuario.Celular,
-		"email":      nuevoUsuario.Email,
-		"contrasena": nuevoUsuario.Contrasena,
+		"cedula":     cedula,
+		"contrasena": contrasena,
 	}
 
-	_, err = c.repo.Create(context.Background(), registrarUsuario, valoresColumna)
+	_, err := c.repo.Create(context.Background(), registrarUsuario, valoresColumna)
 	if err != nil {
 		log.Printf("falló al registrar usuario: %s", err.Error())
-		return false, fmt.Errorf("falló al registrar usuario, con error: %s", err.Error())
+		return nil, fmt.Errorf("falló al registrar usuario, con error: %s", err.Error())
 	}
-	return true, nil
+	usuarioJson, _ := json.Marshal(valoresColumna)
+	return usuarioJson, nil
+}
+
+func (c *ControllerUsuario) Authenticate(cedula string, contrasena string) ([]byte, bool) {
+
+	usuario, err := c.repo.Read(context.Background(), buscarUsuarioByCedula, cedula)
+
+	if err != nil {
+		log.Printf("Usuario no registrado: %s", err.Error())
+		return nil, false
+	}
+	if contrasena != usuario.Contrasena {
+		log.Printf("Las credenciales no son validas")
+		return nil, false
+	}
+	valoresRetornar := map[string]any{
+		"cedula": cedula,
+	}
+	usuarioJson, _ := json.Marshal(valoresRetornar)
+
+	return usuarioJson, true
 }
