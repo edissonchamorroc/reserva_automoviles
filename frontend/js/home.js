@@ -3,7 +3,7 @@ const baseUrl = "http://localhost:8080"
 const botonEliminar = document.getElementById("eliminar")
 const totalTexto = document.getElementById("total")
 const botonLogout = document.getElementById("logout")
-const key="cedula"
+const key = "cedula"
 
 function createCard(auto) {
     return `
@@ -21,7 +21,7 @@ function createCard(auto) {
 }
 // Función para obtener datos del API y mostrar las tarjetas
 async function loadCards() {
- 
+
     try {
         const url = `${baseUrl}/autos/${localStorage.getItem(key)}`
         const response = await fetch(url);
@@ -37,7 +37,10 @@ async function loadCards() {
         totalTexto.textContent = `${total}`
     } catch (error) {
         console.error('Error al obtener los datos:', error);
-        window.location.replace('/index.html')
+        if (localStorage.getItem("cedula") == null) {
+            window.location.replace('/index.html')
+        }
+
     }
 }
 
@@ -57,5 +60,5 @@ async function eliminarReserva(id) {
 
 botonLogout.addEventListener("click", async function (event) {
     event.preventDefault();
-    localStorage.setItem("cedula",null)
+    localStorage.setItem("cedula", null)
 });
