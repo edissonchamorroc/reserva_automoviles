@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/controllers"
 	"github.com/edissonchamorroc/reserva_automoviles/backend/reserva/handlers"
@@ -15,20 +16,12 @@ import (
 	"github.com/lib/pq"
 )
 
-var (
-	server   = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "1234"
-	database = "Reserva_Autos"
-)
 
 func main() {
 
-	url := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		user, password, server, port, database)
+	conn, err := conectarDB(fmt.Sprintf("postgres://%s:%s@db:%s/%s?sslmode=disable", os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME")), "postgres")
 
-	conn, err := conectarDB(url, "postgres")
 	if err != nil {
 		log.Fatalln("error conectando a la base de datos", err.Error())
 	}
