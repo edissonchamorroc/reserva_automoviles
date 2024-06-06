@@ -1,0 +1,80 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #8889c7;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+}
+
+h1 {
+    text-align: center;
+    margin: 20px 0;
+}
+
+button {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+}
+
+.reservations {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    background-color: #a8a9d4;
+}
+
+.card {
+    background-color: #ffffff25;
+    margin: 20px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    width: 300px;
+    cursor: pointer;
+}
+
+.card h2 {
+    margin: 0 0 10px 0;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: block;
+    margin-top: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}
+.car-details {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    margin: 20px auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    width: 90%;
+}
+
+.car-image {
+    width: 300px;
+    height: 200px;
+}
